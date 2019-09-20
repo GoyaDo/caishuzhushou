@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 @MapperScan("com.goya.dao")
 public class App {
 
+    /*
+
+
     //这里报错但不影响正常运行，可以给UserDOMapper加上@Repository,标识这个mapper，但是已经开启了自动扫描，所以可以用标注
     @Autowired
     private UserDOMapper userDOMapper;
@@ -38,6 +41,8 @@ public class App {
         }
 
     }
+    */
+
 
     public static void main(String[] args) {
         System.out.println("Hello World!");
