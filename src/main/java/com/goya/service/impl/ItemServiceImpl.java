@@ -7,7 +7,9 @@ import com.goya.dataobject.ItemStockDO;
 import com.goya.error.BusinessException;
 import com.goya.error.EmBusinessError;
 import com.goya.service.ItemService;
+import com.goya.service.PromoService;
 import com.goya.service.model.ItemModel;
+import com.goya.service.model.PromoModel;
 import com.goya.validator.ValidationResult;
 import com.goya.validator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
@@ -28,10 +30,15 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private ValidatorImpl validator;
+
     @Autowired
     private ItemDOMapper itemDOMapper;
+
     @Autowired
     private ItemStockDOMapper itemStockDOMapper;
+
+    @Autowired
+    private PromoService promoService;
 
 
 
@@ -108,6 +115,13 @@ public class ItemServiceImpl implements ItemService {
 
         //将dataobject->model
         ItemModel itemModel = convertModelFromDataObject(itemDO,itemStockDO);
+
+        //获取活动商品信息，看对应的商品是否在秒杀活动内
+        PromoModel promoModel = promoService.getPromoByItemId(itemModel.getId());
+        if (promoModel != null && promoModel.getStatus().intValue()!=3){
+            //把对应秒杀信息设置在model上面
+            itemModel.setPromoModel(promoModel);
+        }
         return itemModel;
     }
 
