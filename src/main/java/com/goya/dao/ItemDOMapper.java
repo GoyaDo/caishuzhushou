@@ -1,6 +1,7 @@
 package com.goya.dao;
 
 import com.goya.dataobject.ItemDO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -54,4 +55,5 @@ public interface ItemDOMapper {
      * @mbg.generated Fri Sep 20 14:47:43 CST 2019
      */
     int updateByPrimaryKey(ItemDO record);
+    int increaseSales(@Param("id")Integer id,@Param("amount")Integer amount);
 }

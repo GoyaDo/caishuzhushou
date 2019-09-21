@@ -150,7 +150,7 @@
                         <!--允许移动生成的文件-->
                         <verbose>true</verbose>
                         <!--允许覆盖,企业开发不要设置为true-->
-                        <overwrite>true</overwrite>
+                        <overwrite>false</overwrite>
                         <configurationFile>
                             src/main/resources/mybatis-generator.xml
                         </configurationFile>
