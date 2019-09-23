@@ -2,13 +2,14 @@ package com.goya.service.model;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  * @author cj
  * @date 2019-09-21 - 13:54
  */
-public class PromoModel {
+public class PromoModel implements Serializable {
 
     private Integer id;
 

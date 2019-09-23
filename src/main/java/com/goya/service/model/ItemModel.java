@@ -3,13 +3,14 @@ package com.goya.service.model;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  * @author cj
  * @date 2019-09-20 - 14:36
  */
-public class ItemModel {
+public class ItemModel implements Serializable {
     private Integer id;
 
     //商品名称
