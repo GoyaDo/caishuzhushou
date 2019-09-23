@@ -81,6 +81,21 @@
             <version>2.9.1</version>
         </dependency>
 
+        <!--springboot对redis的依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.session/spring-session-data-redis -->
+        <!--spring 对session管理的方式存储在redis里面-->
+        <!--springboot默认的实现方式就是对应的session放入到对应的容器内-->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+            <version>2.1.7.RELEASE</version>
+        </dependency>
+
     </dependencies>
 
     <build>
