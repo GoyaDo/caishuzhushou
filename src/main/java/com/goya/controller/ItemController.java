@@ -10,6 +10,7 @@ import com.goya.error.BusinessException;
 import com.goya.response.CommonReturnType;
 import com.goya.service.CacheService;
 import com.goya.service.ItemService;
+import com.goya.service.PromoService;
 import com.goya.service.model.ItemModel;
 import org.joda.time.format.DateTimeFormat;
 import org.omg.CORBA.PRIVATE_MEMBER;
@@ -42,6 +43,9 @@ public class ItemController extends BaseController{
     @Autowired
     private CacheService cacheService;
 
+    @Autowired
+    private PromoService promoService;
+
     //创建商品的controller
     @RequestMapping(value = "/create", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FROMED})
     @ResponseBody
@@ -64,6 +68,13 @@ public class ItemController extends BaseController{
         ItemVO itemVO = convertVOFromModel(itemModelForReturn);
 
         return CommonReturnType.create(itemVO);
+    }
+
+    @RequestMapping(value = "/publishpromo", method = {RequestMethod.GET})
+    @ResponseBody
+    public CommonReturnType publishpromo(@RequestParam(name = "id")Integer id) {
+        promoService.publishPromo(id);
+        return CommonReturnType.create(null);
     }
 
     //创建商品详情页浏览

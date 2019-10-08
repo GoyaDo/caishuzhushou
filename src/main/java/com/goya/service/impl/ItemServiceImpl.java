@@ -2,23 +2,33 @@ package com.goya.service.impl;
 
 import com.goya.dao.ItemDOMapper;
 import com.goya.dao.ItemStockDOMapper;
+import com.goya.dao.StockLogDOMapper;
 import com.goya.dataobject.ItemDO;
 import com.goya.dataobject.ItemStockDO;
+import com.goya.dataobject.StockLogDO;
 import com.goya.error.BusinessException;
 import com.goya.error.EmBusinessError;
+import com.goya.mq.MqProducer;
 import com.goya.service.ItemService;
 import com.goya.service.PromoService;
 import com.goya.service.model.ItemModel;
 import com.goya.service.model.PromoModel;
 import com.goya.validator.ValidationResult;
 import com.goya.validator.ValidatorImpl;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +50,14 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private PromoService promoService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private MqProducer mqProducer;
+
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
 
 
     private ItemDO convertItemDOFromItemModel(ItemModel itemModel){
@@ -129,21 +147,71 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public boolean decreaseStock(Integer itemId, Integer amount) throws BusinessException {
         //affectedRow：影响的条目数
-        int affectedRow = itemStockDOMapper.decreaseStock(itemId, amount);
-        if (affectedRow > 0){
+//        int affectedRow = itemStockDOMapper.decreaseStock(itemId, amount);
+       long result = redisTemplate.opsForValue().increment("promo_item_stock_"+itemId,amount.intValue()*-1);
+        if (result > 0) {
             //更新库存成功
+//            boolean mqResult = mqProducer.asyncReduceStock(itemId,amount);
+//            if (!mqResult){
+//                redisTemplate.opsForValue().increment("promo_item_stock_"+itemId,amount.intValue());
+//                return false;
+//            }
+            return true;
+        }else if (result == 0){
+            //打上库存已售罄的标识
+            redisTemplate.opsForValue().set("promo_item_stock_invalid"+itemId,"true");
             return true;
         }else {
             //更新库存失败
+            increaseStock(itemId,amount);
             return false;
         }
 
     }
 
     @Override
+    public boolean increaseStock(Integer itemId, Integer amount) throws BusinessException {
+        redisTemplate.opsForValue().increment("promo_item_stock_"+itemId,amount.intValue());
+        return true;
+    }
+
+    @Override
     @Transactional
     public void increaseSales(Integer itemId, Integer amount) throws BusinessException {
         itemDOMapper.increaseSales(itemId,amount);
+    }
+
+
+    //item及promo model缓存模型
+    @Override
+    public ItemModel getItemByIdInCache(Integer id) {
+        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get("item_validate_"+id);
+        if (itemModel == null){
+            itemModel = this.getItemById(id);
+            redisTemplate.opsForValue().set("item_validate_"+id,itemModel);
+            redisTemplate.expire("item_validate_"+id,10, TimeUnit.MINUTES);
+        }
+        return itemModel;
+    }
+
+    @Override
+    public boolean asyncDecreaseStock(Integer itemId, Integer amount) {
+        boolean mqResult = mqProducer.asyncReduceStock(itemId,amount);
+        return mqResult;
+    }
+
+    //初始化库存的流水
+    @Override
+    @Transactional
+    public String initStock_log(Integer itemId, Integer amount) {
+        StockLogDO stockLogDO = new StockLogDO();
+        stockLogDO.setItemId(itemId);
+        stockLogDO.setAmount(amount);
+        stockLogDO.setStockLogId(UUID.randomUUID().toString().replace("-",""));
+        stockLogDO.setStatus(1);
+
+        stockLogDOMapper.insertSelective(stockLogDO);
+        return stockLogDO.getStockLogId();
     }
 
     private ItemModel convertModelFromDataObject(ItemDO itemDO,ItemStockDO itemStockDO){
