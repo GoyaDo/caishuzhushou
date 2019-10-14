@@ -28,6 +28,7 @@ import java.util.Map;
 @Component
 public class MqProducer {
 
+    //作为消息中间件的producer去使用
     private DefaultMQProducer producer;
 
     private TransactionMQProducer transactionMQProducer;
@@ -48,7 +49,9 @@ public class MqProducer {
     public void init() throws MQClientException {
         //做mq producer的初始化
         producer = new DefaultMQProducer("producer_group");
+        //初始化地址
         producer.setNamesrvAddr(nameAddr);
+        //中间件就会去连接对应的操作
         producer.start();
 
         transactionMQProducer = new TransactionMQProducer("transcation_producer_group");
@@ -99,7 +102,7 @@ public class MqProducer {
                 }else if (stockLogDO.getStatus().intValue() == 1){
                     return LocalTransactionState.UNKNOW;
                 }
-                return LocalTransactionState.COMMIT_MESSAGE;
+                return LocalTransactionState.ROLLBACK_MESSAGE;
             }
         });
     }
@@ -138,9 +141,11 @@ public class MqProducer {
 
     //同步库存扣减消息
     public Boolean asyncReduceStock(Integer itemId, Integer amount){
+        //使用Map投放这条消息
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("itemId", itemId);
         bodyMap.put("amount", amount);
+        //新增一条消息
         Message message = new Message(topicName, "increase", JSON.toJSON(bodyMap).toString().getBytes(Charset.forName("UTF-8")));
         try {
             producer.send(message);

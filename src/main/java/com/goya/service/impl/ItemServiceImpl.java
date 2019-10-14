@@ -204,10 +204,13 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public String initStock_log(Integer itemId, Integer amount) {
+        //设置stockLog的状态
         StockLogDO stockLogDO = new StockLogDO();
         stockLogDO.setItemId(itemId);
         stockLogDO.setAmount(amount);
+        //使用UUID的方式生成stockLogId，并且作为它对应的主键，set到数据库里
         stockLogDO.setStockLogId(UUID.randomUUID().toString().replace("-",""));
+        //设置状态
         stockLogDO.setStatus(1);
 
         stockLogDOMapper.insertSelective(stockLogDO);

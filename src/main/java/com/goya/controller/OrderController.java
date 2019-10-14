@@ -60,7 +60,9 @@ public class OrderController extends BaseController {
 
     @PostConstruct
     public void init(){
+        //创建一个可以工作20个线程的线程池
         executorService = Executors.newFixedThreadPool(20);
+        //初始化orderCreateRateLimiter，一秒钟通过300个
         orderCreateRateLimiter = RateLimiter.create(300);
     }
 
@@ -177,8 +179,8 @@ public class OrderController extends BaseController {
 
 
         //同步调用线程池的submit方法
-        //拥塞窗口为20的等待队列，用来队列泄洪
-        Future<Object> future = executorService.submit(new Callable<Object>() {
+        //拥塞窗口为20的等待队列，用来队列化泄洪
+        Future<Object> future =executorService.submit(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 //加入库存流水init状态
