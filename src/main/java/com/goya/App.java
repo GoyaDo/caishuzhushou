@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.bind.EscapedErrors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 //dao存放的位置放在这个包下
 @MapperScan("com.goya.dao")
+
+//可以解析aop的一些配置
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class App {
 
     /*

@@ -22,6 +22,7 @@ public class CommonReturnType {
         return CommonReturnType.create(result,"success");
     }
 
+    //定义一个通用的创建返回对象的方法
     public static CommonReturnType create(Object result,String status){
         CommonReturnType type = new CommonReturnType();
         type.setStatus(status);

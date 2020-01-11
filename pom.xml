@@ -109,6 +109,12 @@
             <version>4.3.0</version>
         </dependency>
 
+        <!--对aop的支持-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
